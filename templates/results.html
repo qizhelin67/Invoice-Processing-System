@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>处理结果 | Processing Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .results-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .summary-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .category-section {
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .category-icon {
+            font-size: 2em;
+            margin-right: 15px;
+        }
+
+        .category-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .category-info {
+            margin-left: auto;
+            color: #666;
+        }
+
+        .item-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .item-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+
+        .item-card:hover {
+            background: #f0f2ff;
+            transform: translateX(5px);
+        }
+
+        .item-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+        }
+
+        .item-details {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .item-meta {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .item-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✅ 处理完成！</h1>
+            <p>发票已成功识别、分类和整理</p>
+        </div>
+
+        <div class="results-card">
+            {% set stats = result['statistics'] %}
+
+            <div class="summary">
+                <div class="summary-item">
+                    <div class="summary-label">发票总数</div>
+                    <div class="summary-value">{{ stats['total_invoices'] }}</div>
+                </div>
+
+                <div class="summary-item">
+                    <div class="summary-label">配对成功</div>
+                    <div class="summary-value">{{ stats['total_pairs'] }}</div>
+                </div>
+
+                <div class="summary-item">
+                    <div class="summary-label">总金额</div>
+                    <div class="summary-value">¥{{ "{:,.2f}".format(stats['grand_total']) }}</div>
+                </div>
+
+                <div class="summary-item">
+                    <div class="summary-label">类别数</div>
+                    <div class="summary-value">{{ stats['by_category']|length }}</div>
+                </div>
+            </div>
+
+            {% for category, info in result['categories'].items() %}
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">{{ info['icon'] }}</div>
+                    <div class="category-name">{{ info['name'] }}</div>
+                    <div class="category-info">
+                        {{ info['count'] }} 项 |
+                        ¥{{ "{:,.2f}".format(stats['by_category'][category]['total_amount']) if category in stats['by_category'] else '0.00' }}
+                    </div>
+                </div>
+
+                {% if info['items'] %}
+                <div class="item-list">
+                    {% for item in info['items'] %}
+                    <div class="item-card">
+                        <div class="item-icon">📄</div>
+                        <div class="item-details">
+                            <div class="item-name">{{ item['file_name'] }}</div>
+                            <div class="item-meta">
+                                {% if item['date'] %}{{ item['date'] }}{% endif %}
+                                {% if item['merchant'] %} | {{ item['merchant'] }}{% endif %}
+                            </div>
+                        </div>
+                        {% if item['amount'] %}
+                        <div class="item-amount">¥{{ "{:,.2f}".format(item['amount']) }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="download-section">
+                <a href="{{ result['zip_url'] }}" class="download-btn">
+                    📥 下载报销结果（ZIP + Excel）
+                </a>
+
+                <br>
+
+                <a href="/" class="back-link">
+                    ← 返回处理更多发票
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

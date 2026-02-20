@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: invoice-processor
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /status
+    envVars:
+      - key: PORT
+        value: 8000
+    disk:
+      size: 1GB
