@@ -10,6 +10,8 @@ RUN apt-get update && apt-get install -y \
     tesseract-ocr-chi-sim \
     tesseract-ocr-eng \
     libgomp1 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first (better caching)
